@@ -1,0 +1,199 @@
+{
+    "Comment": "Run Glue jobs to process CloudTrail logs with DPU based on Lambda file count per prefix - Simplified with recursive prefix discovery",
+    "StartAt": "CheckCloudTrailPathExists",
+    "States": {
+        "CheckCloudTrailPathExists": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+            "Parameters": {
+                "Bucket": "sandbox-628611016434-cloudtrail-logs-bucket",
+                "Prefix": "raw-cloudtrail-logs/AWSLogs/628611016434/CloudTrail/",
+                "MaxKeys": 1
+            },
+            "Next": "PathExistsCheck",
+            "ResultPath": "$.pathCheckResult",
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "SkipProcessing",
+                    "ResultPath": "$.pathCheckError"
+                }
+            ]
+        },
+        "PathExistsCheck": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Variable": "$.pathCheckResult.KeyCount",
+                    "NumericGreaterThan": 0,
+                    "Next": "GetAllDayPrefixes"
+                }
+            ],
+            "Default": "SkipProcessing"
+        },
+        "GetAllDayPrefixes": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": "get-last-days-cloud-trail-lambda",
+                "Payload": {
+                    "bucket_name": "sandbox-628611016434-cloudtrail-logs-bucket",
+                    "base_prefix": "raw-cloudtrail-logs/AWSLogs/628611016434/CloudTrail/"
+                }
+            },
+            "ResultPath": "$.dayPrefixesResult",
+            "Next": "CheckIfPrefixesFound"
+        },
+        "CheckIfPrefixesFound": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Variable": "$.dayPrefixesResult.Payload.total_count",
+                    "NumericGreaterThan": 0,
+                    "Next": "ProcessDayPrefixes"
+                }
+            ],
+            "Default": "SkipProcessing"
+        },
+        "ProcessDayPrefixes": {
+            "Type": "Map",
+            "ItemsPath": "$.dayPrefixesResult.Payload.day_prefixes",
+            "MaxConcurrency": 10,
+            "ItemSelector": {
+                "Prefix.$": "$$.Map.Item.Value"
+            },
+            "Iterator": {
+                "StartAt": "CountFilesInPrefix",
+                "States": {
+                    "CountFilesInPrefix": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "Parameters": {
+                            "FunctionName": "count-cloud-trail-files-lambda",
+                            "Payload": {
+                                "bucket_name": "sandbox-628611016434-cloudtrail-logs-bucket",
+                                "prefix.$": "$.Prefix"
+                            }
+                        },
+                        "ResultPath": "$.fileCountResult",
+                        "Next": "CalculateDPUFromFileCount"
+                    },
+                    "CalculateDPUFromFileCount": {
+                        "Type": "Choice",
+                        "Choices": [
+                            {
+                                "Variable": "$.fileCountResult.Payload.file_count",
+                                "NumericLessThan": 1000,
+                                "Next": "SetDPU2FromLambda"
+                            },
+                            {
+                                "Variable": "$.fileCountResult.Payload.file_count",
+                                "NumericLessThan": 5000,
+                                "Next": "SetDPU5FromLambda"
+                            },
+                            {
+                                "Variable": "$.fileCountResult.Payload.file_count",
+                                "NumericLessThan": 10000,
+                                "Next": "SetDPU10FromLambda"
+                            }
+                        ],
+                        "Default": "SetDPU20FromLambda"
+                    },
+                    "SetDPU2FromLambda": {
+                        "Type": "Pass",
+                        "Parameters": {
+                            "fileCount.$": "$.fileCountResult.Payload.file_count",
+                            "dpuCount": 2,
+                            "prefix.$": "$.Prefix",
+                            "source": "lambda-file-count"
+                        },
+                        "Next": "RunGlueJob"
+                    },
+                    "SetDPU5FromLambda": {
+                        "Type": "Pass",
+                        "Parameters": {
+                            "fileCount.$": "$.fileCountResult.Payload.file_count",
+                            "dpuCount": 5,
+                            "prefix.$": "$.Prefix",
+                            "source": "lambda-file-count"
+                        },
+                        "Next": "RunGlueJob"
+                    },
+                    "SetDPU10FromLambda": {
+                        "Type": "Pass",
+                        "Parameters": {
+                            "fileCount.$": "$.fileCountResult.Payload.file_count",
+                            "dpuCount": 10,
+                            "prefix.$": "$.Prefix",
+                            "source": "lambda-file-count"
+                        },
+                        "Next": "RunGlueJob"
+                    },
+                    "SetDPU20FromLambda": {
+                        "Type": "Pass",
+                        "Parameters": {
+                            "fileCount.$": "$.fileCountResult.Payload.file_count",
+                            "dpuCount": 20,
+                            "prefix.$": "$.Prefix",
+                            "source": "lambda-file-count"
+                        },
+                        "Next": "RunGlueJob"
+                    },
+                    "RunGlueJob": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                        "Parameters": {
+                            "JobName": "infra_glue_transform_cloudtrail_logs",
+                            "NumberOfWorkers.$": "$.dpuCount",
+                            "WorkerType": "G.1X",
+                            "Arguments": {
+                                "--retention_days_for_processed_logs": "30",
+                                "--log_level": "INFO",
+                                "--account_id": "628611016434",
+                                "--database_name": "cloudtrail_logs",
+                                "--input_path": "s3://sandbox-628611016434-cloudtrail-logs-bucket/raw-cloudtrail-logs/",
+                                "--job-language": "python",
+                                "--datalake-formats": "iceberg",
+                                "--crawler_role": "arn:aws:iam::628611016434:role/nfl-dna-gridiron-su-glue-cloudtrail-sandbox",
+                                "--output_path": "s3://sandbox-628611016434-cloudtrail-logs-bucket/processed-cloudtrail-logs/",
+                                "--file_count.$": "States.JsonToString($.fileCount)",
+                                "--prefix.$": "$.prefix",
+                                "--count_source.$": "$.source"
+                            }
+                        },
+                        "Retry": [
+                            {
+                                "ErrorEquals": [
+                                    "States.TaskFailed"
+                                ],
+                                "IntervalSeconds": 30,
+                                "MaxAttempts": 3,
+                                "BackoffRate": 2
+                            }
+                        ],
+                        "End": true
+                    }
+                }
+            },
+            "Next": "ProcessingComplete"
+        },
+        "SkipProcessing": {
+            "Type": "Pass",
+            "Parameters": {
+                "status": "SKIPPED",
+                "message": "CloudTrail logs path does not exist or no prefixes found, skipping processing"
+            },
+            "End": true
+        },
+        "ProcessingComplete": {
+            "Type": "Pass",
+            "Parameters": {
+                "message": "All CloudTrail Glue jobs completed",
+                "results.$": "$"
+            },
+            "End": true
+        }
+    }
+}

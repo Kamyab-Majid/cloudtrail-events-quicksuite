@@ -1,0 +1,13 @@
+{
+  "app": "python app.py",
+  "context": {
+    "dev": {
+      "account-id": "956632141018",
+      "cdk_version": "2.91.0",
+      "ecr_repo_name": "downstream_pipeline_codebuild_image",
+      "region": "us-east-1",
+      "env": "sandbox",
+      "account_env": "dev"
+    }
+  }
+}
