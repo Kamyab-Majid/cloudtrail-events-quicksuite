@@ -1,7 +1,7 @@
 import os
 
 import aws_cdk.aws_events as events
-from aws_cdk import Aws, Duration, RemovalPolicy, Stack
+from aws_cdk import Aws, CfnParameter, Duration, RemovalPolicy, Stack
 from aws_cdk import aws_cloudtrail as cloudtrail
 from aws_cdk import aws_events_targets as targets
 from aws_cdk import aws_glue_alpha as alpha_glue
@@ -20,11 +20,47 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
         self,
         scope: Construct,
         id: str,
-        env_vars,
-        env,
-        log_expiration_days: int,
         **kwargs,
     ):
+        super().__init__(scope, id, **kwargs)
+
+        # Parameters
+        resource_prefix_param = CfnParameter(
+            self, "ResourcePrefix",
+            type="String",
+            default="cloudtrail",
+            description="Prefix for resource names to allow multiple deployments",
+            allowed_pattern="[a-z0-9-]+",
+            constraint_description="Only lowercase letters, numbers, and hyphens allowed"
+        )
+
+        environment_param = CfnParameter(
+            self, "Environment",
+            type="String",
+            default="dev",
+            description="Environment name (e.g., dev, prod)"
+        )
+
+        log_expiration_days_param = CfnParameter(
+            self, "LogExpirationDays",
+            type="Number",
+            default=14,
+            description="Number of days to retain CloudTrail logs"
+        )
+
+        number_of_workers_param = CfnParameter(
+            self, "NumberOfWorkers",
+            type="Number",
+            default=5,
+            description="Number of Glue workers"
+        )
+
+        assets_bucket_param = CfnParameter(
+            self, "AssetsBucket",
+            type="String",
+            description="S3 bucket containing Lambda code and Glue scripts"
+        )
+
         with open(
             os.path.join(
                 os.path.dirname(__file__),
@@ -34,20 +70,17 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
         ) as f:
             step_function_definition_str = f.read()
 
-        super().__init__(scope, id, **kwargs)
+        account_id = Aws.ACCOUNT_ID
+        region = Aws.REGION
+        env_vars = {"env": environment_param.value_as_string, "account-id": account_id}
 
-        account_id = env_vars["account-id"]
-        region = env_vars["region"]
-
-        cloudtrail_bucket_name = (
-            f"{env_vars['env']}-{account_id}-cloudtrail-logs-bucket"
-        )
+        cloudtrail_bucket_name = f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-{account_id}-logs"
 
         # Create KMS key for CloudTrail
         kms_key = kms.Key(
             self,
             "CloudTrailLogsKey",
-            alias="alias/cloudtrail-logs-key",
+            alias=f"alias/{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-key",
             enable_key_rotation=True,
             removal_policy=RemovalPolicy.RETAIN,
         )
@@ -177,7 +210,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             self,
             "GlueJobRole",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
-            role_name=f"nfl-dna-gridiron-su-glue-cloudtrail-{env_vars['env']}",
+            role_name=f"{resource_prefix_param.value_as_string}-glue-{environment_param.value_as_string}",
             inline_policies={
                 "glue-job-policy": iam.PolicyDocument(
                     statements=[
@@ -267,20 +300,15 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             "--crawler_role": glue_role.role_arn,
             "--log_level": "INFO",
             "--datalake-formats": "iceberg",
-            "--retention_days_for_processed_logs": str(log_expiration_days),
+            "--retention_days_for_processed_logs": log_expiration_days_param.value_as_string,
         }
 
-        env_account_id = env_vars.get("account-id", "unknown-account")
-        if env_account_id in ["067157108346", "397422540095"]:
-            number_of_workers = 10
-            worker_type = alpha_glue.WorkerType.G_1_X
-        else:
-            number_of_workers = 5
-            worker_type = alpha_glue.WorkerType.G_1_X
+        number_of_workers = number_of_workers_param.value_as_number
+        worker_type = alpha_glue.WorkerType.G_1_X
 
         # Glue Job Definition for CloudTrail processing
-        glue_job_name = "infra_glue_transform_cloudtrail_logs"
-        _ = alpha_glue.Job(
+        glue_job_name = f"{resource_prefix_param.value_as_string}-glue-job"
+        glue_job = alpha_glue.Job(
             self,
             "CloudTrailLoggingGlueJob",
             job_name=glue_job_name,
@@ -306,6 +334,10 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             ),
             default_arguments=default_arguments,
         )
+        glue_job.node.default_child.add_property_override(
+            "Command.ScriptLocation",
+            f"s3://{assets_bucket_param.value_as_string}/glue/cloudtrail_log_processing.py"
+        )
 
         self.trail_bucket = trail_bucket
 
@@ -324,6 +356,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             lambda_path=file_count_lambda_path,
             timeout=Duration.minutes(15),
             memory_size=512,
+            name=f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-count-files-lambda",
             additional_iam_policies={
                 "lambda_policy": iam.PolicyDocument(
                     statements=[
@@ -337,6 +370,12 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
                     ]
                 )
             },
+        )
+        file_count_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Bucket", assets_bucket_param.value_as_string
+        )
+        file_count_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Key", "lambda/count-files.zip"
         )
 
         last_7_days_lambda_path = os.path.join(
@@ -356,6 +395,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             },
             lambda_path=last_7_days_lambda_path,
             timeout=Duration.minutes(2),
+            name=f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-last-days-lambda",
             additional_iam_policies={
                 "lambda_policy": iam.PolicyDocument(
                     statements=[
@@ -370,6 +410,12 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
                 )
             },
             memory_size=512,
+        )
+        last_7_days_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Bucket", assets_bucket_param.value_as_string
+        )
+        last_7_days_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Key", "lambda/last-days.zip"
         )
 
         max_file_count_lambda_path = os.path.join(
@@ -386,6 +432,13 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             lambda_path=max_file_count_lambda_path,
             timeout=Duration.minutes(2),
             memory_size=512,
+            name=f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-max-count-lambda",
+        )
+        max_file_count_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Bucket", assets_bucket_param.value_as_string
+        )
+        max_file_count_lambda.lambda_function.node.default_child.add_property_override(
+            "Code.S3Key", "lambda/max-count.zip"
         )
 
         policy_statements = [
@@ -439,7 +492,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             "{env_vars['account-id']}", account_id
         )
         step_function_definition_str = step_function_definition_str.replace(
-            "{env_vars['env']}", env_vars["env"]
+            "{env_vars['env']}", environment_param.value_as_string
         )
 
         # Create a Step Function to trigger the Glue job
@@ -450,6 +503,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             env_vars=env_vars,
             state_machine_policy_statements=policy_statements,
             definition_string=step_function_definition_str,
+            name=f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-step-function",
         )
 
         event_bridge_rule = PlaybookEventBridgeRule(
@@ -458,6 +512,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
             nag_suppression=NagSuppressions,
             env_vars=env_vars,
             schedule=events.Schedule.cron(minute="0", hour="23", week_day="SUN"),
+            name=f"{resource_prefix_param.value_as_string}-{environment_param.value_as_string}-eventbridge-rule",
         )
 
         # Add the Step Function as a target for the EventBridge rule
