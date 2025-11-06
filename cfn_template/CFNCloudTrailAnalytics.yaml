@@ -37,10 +37,6 @@ Parameters:
   AssetsBucket:
     Type: String
     Description: S3 bucket containing Lambda code and Glue scripts
-  BootstrapVersion:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /cdk-bootstrap/hnb659fds/version
-    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
 Resources:
   CloudTrailLogsKey72128003:
     Type: AWS::KMS::Key

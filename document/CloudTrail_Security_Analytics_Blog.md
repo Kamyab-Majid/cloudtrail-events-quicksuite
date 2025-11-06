@@ -169,8 +169,8 @@ We will deploy the solution using AWS CDK Stack to create the required resources
    - Under the section: **Processing Configuration**
      - **NumberOfWorkers**: Number of AWS Glue workers for processing CloudTrail logs (default: 5)
 
-   ![CloudFormation template parameters for CloudTrail analytics]
-
+   ![CloudFormation template parameters for CloudTrail analytics](template-deploy.png)
+   
    **Figure 2 – AWS CloudFormation parameters – CloudFormation deployment**
 
 6. **Check "I acknowledge that AWS CloudFormation might create IAM resources with custom names" and create the stack.**
