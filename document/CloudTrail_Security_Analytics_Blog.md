@@ -153,7 +153,7 @@ We will deploy the solution using AWS CDK Stack to create the required resources
    aws s3 cp glue/cloudtrail_log_processing.py s3://YOUR-BUCKET-NAME/glue/
    ```
 
-4. **Deploy the CloudFormation stack and enter the following parameters:**
+4. **[Deploy the stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack) using the downloaded [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and enter the following parameters:**
 
    - Under the section: **Resource Configuration**
      - **AssetsBucket**: Name of the S3 bucket containing Lambda code and Glue scripts (created in step 2)
