@@ -300,6 +300,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
                     os.path.join(
                         os.path.dirname(__file__),
                         "cloudtrail_asset",
+                        "glue",
                         "cloudtrail_log_processing.py",
                     )
                 ),
@@ -313,6 +314,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
         file_count_lambda_path = os.path.join(
             os.path.dirname(__file__),
             "cloudtrail_asset",
+            "lambda",
             "file_count_lambda",
             "lambda-handler.py",
         )
@@ -342,6 +344,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
         last_7_days_lambda_path = os.path.join(
             os.path.dirname(__file__),
             "cloudtrail_asset",
+            "lambda",
             "last_7_days_lambda",
             "lambda-handler.py",
         )
@@ -375,6 +378,7 @@ class CloudTrailWithKmsAndIcebergStack(Stack):
         max_file_count_lambda_path = os.path.join(
             os.path.dirname(__file__),
             "cloudtrail_asset",
+            "lambda",
             "max_file_count_lambda",
             "lambda-handler.py",
         )

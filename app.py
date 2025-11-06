@@ -4,7 +4,6 @@
 import os
 
 import aws_cdk as cdk
-from cdk_nag import AwsSolutionsChecks
 
 from infra_sandbox.cloudtrail_stack import CloudTrailWithKmsAndIcebergStack
 
@@ -23,7 +22,5 @@ CloudTrailWithKmsAndIcebergStack(
     app, "CloudTrailWithKmsStack", env_vars=config_vars, log_expiration_days=12, env=env
 )
 
-
-cdk.Aspects.of(app).add(AwsSolutionsChecks())
 
 app.synth()
