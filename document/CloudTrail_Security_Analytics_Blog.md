@@ -120,7 +120,7 @@ We will deploy the solution using AWS CDK Stack to create the required resources
 3. **Navigate to the AWS CloudFormation console to view the resources created by the CDK Stack.**
 
 ### Deployment Option 2: Using CloudFormation Template (For Non-Technical Users)
-git comm
+
 **Steps:**
 
 1. **Download the [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and [Lambda/Glue scripts folder](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/infra_sandbox/cloudtrail_asset) from the GitHub repository.**
