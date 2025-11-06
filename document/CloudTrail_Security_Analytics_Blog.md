@@ -85,63 +85,104 @@ For this walkthrough, you must have the following:
 
 ## Walkthrough 
 
+This solution offers two deployment options to accommodate different user preferences and technical expertise levels.
+
+### Deployment Option 1: Using AWS CDK (For Technical Users)
+
+**Repository:** [CDK Deployment Repo](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite)
+
+We will deploy the solution using AWS CDK Stack to create the required resources. The CDK Stack can be deployed from any AWS account with appropriate permissions. The CloudTrail logs, processing pipeline, and QuickSuite dashboards will be created in the stack deployment account and region.
+
+**Steps:**
+
+1. **Download the CDK code from the GitHub repository and deploy the Stack.**
+
+2. **In the CDK configuration, enter the following parameters:**
+
+   - Under the section: **Environment Configuration**
+     - **Account ID**: Your AWS account ID for resource deployment
+     - **Region**: AWS region for resource deployment (e.g., us-east-1)
+     - **Environment**: Environment name (e.g., sandbox, dev, prod)
+
+   - Under the section: **CloudTrail Configuration**
+     - **Log Expiration Days**: Number of days to retain CloudTrail logs (default: 14)
+     - **Multi-Region Trail**: Enable multi-region CloudTrail logging
+     - **Include Global Services**: Include AWS global service events
+
+   - Under the section: **Processing Configuration**
+     - **Glue Worker Count**: Number of Glue workers for processing (auto-scaled based on data volume)
+     - **Processing Schedule**: EventBridge schedule for automated processing (default: weekly)
+
+   ![CDK deployment parameters for CloudTrail analytics]
+
+   **Figure 2 – AWS CDK parameters – CloudTrail analytics deployment**
+
+3. **Navigate to the AWS CloudFormation console to view the resources created by the CDK Stack.**
+
+### Deployment Option 2: Using CloudFormation Template (For Non-Technical Users)
+
+**Repository:** [CloudFormation Template Repository]()
+
+**Steps:**
+
+1. **Download the [CloudFormation template]() and [Lambda/Glue scripts]() from the GitHub repository.**
+
+2. **Create an S3 bucket to store Lambda code and Glue scripts:**
+
+   Using AWS Console:
+   - Go to S3 → Create bucket
+   - Provide a unique bucket name
+   - Keep default settings
+
+   Or using AWS CLI:
+   ```bash
+   aws s3 mb s3://YOUR-BUCKET-NAME
+   ```
+
+3. **Upload Lambda code and Glue scripts to your S3 bucket:**
+
+   Using AWS Console:
+   - Upload `lambda/file_count_lambda/` folder to `s3://YOUR-BUCKET/lambda/count-files/`
+   - Upload `lambda/last_7_days_lambda/` folder to `s3://YOUR-BUCKET/lambda/last-days/`
+   - Upload `lambda/max_file_count_lambda/` folder to `s3://YOUR-BUCKET/lambda/max-count/`
+   - Upload `glue/cloudtrail_log_processing.py` file to `s3://YOUR-BUCKET/glue/cloudtrail_log_processing.py`
+
+   Or using AWS CLI:
+   ```bash
+   aws s3 cp lambda/file_count_lambda/ s3://YOUR-BUCKET-NAME/lambda/count-files/ --recursive
+   aws s3 cp lambda/last_7_days_lambda/ s3://YOUR-BUCKET-NAME/lambda/last-days/ --recursive
+   aws s3 cp lambda/max_file_count_lambda/ s3://YOUR-BUCKET-NAME/lambda/max-count/ --recursive
+   aws s3 cp glue/cloudtrail_log_processing.py s3://YOUR-BUCKET-NAME/glue/
+   ```
+
+4. **Deploy the CloudFormation stack and enter the following parameters:**
+
+   - Under the section: **Resource Configuration**
+     - **AssetsBucket**: Name of the S3 bucket containing Lambda code and Glue scripts (created in step 2)
+     - **ResourcePrefix**: Prefix for resource names to allow multiple deployments (e.g., cloudtrail, team1)
+     - **Environment**: Environment name (e.g., dev, prod, sandbox)
+
+   - Under the section: **CloudTrail Configuration**
+     - **LogExpirationDays**: Number of days to retain CloudTrail logs in S3 (default: 14)
+
+   - Under the section: **Processing Configuration**
+     - **NumberOfWorkers**: Number of AWS Glue workers for processing CloudTrail logs (default: 5)
+
+   ![CloudFormation template parameters for CloudTrail analytics]
+
+   **Figure 2 – AWS CloudFormation parameters – CloudFormation deployment**
+
+5. **Check "I acknowledge that AWS CloudFormation might create IAM resources with custom names" and create the stack.**
+
+6. **Navigate to the Resources tab to view the resources created by the CloudFormation Stack.**
+
+### Post-Deployment Steps
+
+**Navigate to the AWS CloudFormation console to view the resources created by the stack.** 
+
  
 
-We will deploy the solution using AWS CDK Stack to create the required resources. The CDK Stack can be deployed from any AWS account with appropriate permissions. The CloudTrail logs, processing pipeline, and QuickSuite dashboards will be created in the stack deployment account and region. 
-
- 
-
-After the deployment, I will walk through creating visuals using Amazon QuickSuite natural language capabilities. 
-
- 
-
-1. **Download the CDK code from the GitHub repository and deploy the Stack.** 
-
- 
-
-2. **In the CDK configuration, enter the following parameters:** 
-
-   - Under the section: **Environment Configuration** 
-
-     - **Account ID**: Your AWS account ID for resource deployment 
-
-     - **Region**: AWS region for resource deployment (e.g., us-east-1) 
-
-     - **Environment**: Environment name (e.g., sandbox, dev, prod) 
-
-    
-
-   - Under the section: **CloudTrail Configuration** 
-
-     - **Log Expiration Days**: Number of days to retain CloudTrail logs (default: 14) 
-
-     - **Multi-Region Trail**: Enable multi-region CloudTrail logging 
-
-     - **Include Global Services**: Include AWS global service events 
-
-    
-
-   - Under the section: **Processing Configuration** 
-
-     - **Glue Worker Count**: Number of Glue workers for processing (auto-scaled based on data volume) 
-
-     - **Processing Schedule**: EventBridge schedule for automated processing (default: weekly) 
-
- 
-
-   ![CDK deployment parameters for CloudTrail analytics] 
-
-    
-
-   **Figure 2 – AWS CDK parameters – CloudTrail analytics deployment** 
-
- 
-
-3. **Navigate to the AWS CloudFormation console to view the resources created by the CDK Stack.** 
-
- 
-
-After the CDK deployment completes, wait for the CloudTrail to generate logs and the initial AWS Glue job execution to complete. By default, the EventBridge rule triggers processing weekly. For immediate processing, you can manually execute the Step Functions state machine. 
+After the deployment completes, wait for CloudTrail to generate logs and the initial AWS Glue job execution to complete. By default, the EventBridge rule triggers processing weekly. For immediate processing, you can manually execute the Step Functions state machine. 
 
  
 
