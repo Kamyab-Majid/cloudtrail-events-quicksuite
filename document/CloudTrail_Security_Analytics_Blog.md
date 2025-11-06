@@ -123,7 +123,7 @@ We will deploy the solution using AWS CDK Stack to create the required resources
 
 **Steps:**
 
-1. **Download the [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and [Lambda/Glue scripts folder](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/infra_sandbox/cloudtrail_asset) from the GitHub repository.**
+1. **Download the [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) from the GitHub repository.**
 
 2. **Create an S3 bucket to store Lambda code and Glue scripts:**
 
@@ -137,23 +137,26 @@ We will deploy the solution using AWS CDK Stack to create the required resources
    aws s3 mb s3://YOUR-BUCKET-NAME
    ```
 
-3. **Upload Lambda code and Glue scripts from [Lambda/Glue scripts folder](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/infra_sandbox/cloudtrail_asset) to your S3 bucket:**
+3. **Download the [cloudtrail-assets.zip](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/releases/download/v1.0/cloudtrail-assets.zip) file containing Lambda code and Glue scripts.**
+
+4. **Extract the zip file and upload the contents to your S3 bucket:**
 
    Using AWS Console:
-   - Upload `lambda/file_count_lambda/` folder to `s3://YOUR-BUCKET/lambda/count-files/`
-   - Upload `lambda/last_7_days_lambda/` folder to `s3://YOUR-BUCKET/lambda/last-days/`
-   - Upload `lambda/max_file_count_lambda/` folder to `s3://YOUR-BUCKET/lambda/max-count/`
-   - Upload `glue/cloudtrail_log_processing.py` file to `s3://YOUR-BUCKET/glue/cloudtrail_log_processing.py`
+   - Extract `cloudtrail-assets.zip` to a local folder
+   - Upload the extracted `lambda/` folder to `s3://YOUR-BUCKET/lambda/`
+   - Upload the extracted `glue/` folder to `s3://YOUR-BUCKET/glue/`
 
    Or using AWS CLI:
    ```bash
-   aws s3 cp lambda/file_count_lambda/ s3://YOUR-BUCKET-NAME/lambda/count-files/ --recursive
-   aws s3 cp lambda/last_7_days_lambda/ s3://YOUR-BUCKET-NAME/lambda/last-days/ --recursive
-   aws s3 cp lambda/max_file_count_lambda/ s3://YOUR-BUCKET-NAME/lambda/max-count/ --recursive
-   aws s3 cp glue/cloudtrail_log_processing.py s3://YOUR-BUCKET-NAME/glue/
+   # Extract the zip file
+   unzip cloudtrail-assets.zip
+   
+   # Upload to S3
+   aws s3 cp lambda/ s3://YOUR-BUCKET-NAME/lambda/ --recursive
+   aws s3 cp glue/ s3://YOUR-BUCKET-NAME/glue/ --recursive
    ```
 
-4. **[Deploy the stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack) using the downloaded [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and enter the following parameters:**
+5. **[Deploy the stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack) using the downloaded [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and enter the following parameters:**
 
    - Under the section: **Resource Configuration**
      - **AssetsBucket**: Name of the S3 bucket containing Lambda code and Glue scripts (created in step 2)
@@ -170,9 +173,9 @@ We will deploy the solution using AWS CDK Stack to create the required resources
 
    **Figure 2 – AWS CloudFormation parameters – CloudFormation deployment**
 
-5. **Check "I acknowledge that AWS CloudFormation might create IAM resources with custom names" and create the stack.**
+6. **Check "I acknowledge that AWS CloudFormation might create IAM resources with custom names" and create the stack.**
 
-6. **Navigate to the Resources tab to view the resources created by the CloudFormation Stack.**
+7. **Navigate to the Resources tab to view the resources created by the CloudFormation Stack.**
 
 ### Post-Deployment Steps
 
