@@ -125,7 +125,7 @@ We will deploy the solution using AWS CDK Stack to create the required resources
 
 **Steps:**
 
-1. **Download the [CloudFormation template]() and [Lambda/Glue scripts]() from the GitHub repository.**
+1. **Download the [CloudFormation template](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml) and [Lambda/Glue scripts folder](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/infra_sandbox/cloudtrail_asset) from the GitHub repository.**
 
 2. **Create an S3 bucket to store Lambda code and Glue scripts:**
 
