@@ -137,7 +137,7 @@ We will deploy the solution using AWS CDK Stack to create the required resources
    aws s3 mb s3://YOUR-BUCKET-NAME
    ```
 
-3. **Upload Lambda code and Glue scripts to your S3 bucket:**
+3. **Upload Lambda code and Glue scripts from [Lambda/Glue scripts folder](https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/infra_sandbox/cloudtrail_asset) to your S3 bucket:**
 
    Using AWS Console:
    - Upload `lambda/file_count_lambda/` folder to `s3://YOUR-BUCKET/lambda/count-files/`
