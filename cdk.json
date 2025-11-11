@@ -1,0 +1,11 @@
+{
+  "app": "python app.py",
+  "context": {
+    "dev": {
+      "account-id": "956632141018",
+      "cdk_version": "2.91.0",
+      "region": "us-east-1",
+      "env": "sandbox"
+    }
+  }
+}

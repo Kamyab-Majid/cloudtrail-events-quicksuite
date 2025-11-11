@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CloudTrail_Security_Analytics_Blog.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="building-enterprise-cloudtrail-security-analytics-dashboards-using-amazon-quicksuite">Building enterprise CloudTrail security analytics dashboards using Amazon Quicksuite</h1>
+<p>by Vy Nguyen and Majid Kamyab on 2025-11-03 in Amazon QuickSuite, AWS CloudTrail, AWS Glue, AWS Step Functions, Security &amp; Compliance, Management &amp; Governance Permalink Share</p>
+<p>In today's complex cloud environments, monitoring and visualizing security events across your AWS infrastructure is crucial for maintaining compliance and detecting threats. Creating comprehensive <a href="https://aws.amazon.com/cloudtrail/">CloudTrail</a> analytics dashboards requires careful data processing, transformation, and visualization to deliver meaningful insights.</p>
+<p><a href="https://aws.amazon.com/quickssuite/">Amazon QuickSuite</a> is a cloud-native business intelligence service that enhances this experience by enabling natural language interactions with your CloudTrail data. This blog explores how Amazon QuickSuite's AI-powered capabilities allow you to transform complex multi-step processes into intuitive prompts. Learn how you can quickly generate insightful security analytics and compliance visualizations from your CloudTrail logs. Discover how automated data processing pipelines help you create dynamic dashboards, saving valuable time while maintaining accuracy, and providing real-time insights into your organization's security posture. Whether you're a security analyst, compliance officer, or cloud architect, this guide demonstrates how modern analytics revolutionizes the way you monitor and report on AWS security events.</p>
+<p>Furthermore, this solution provides comprehensive visibility into your cloud security through custom analytical views. Create visualizations to monitor user activities, track resource changes, identify security anomalies, and maintain compliance across your AWS environment to better understand your security landscape.</p>
+<h2 id="solution-overview">Solution Overview</h2>
+<p>The architecture consists of several key components working together: <a href="https://aws.amazon.com/cloudtrail/">AWS CloudTrail</a> captures API calls and stores encrypted logs in <a href="https://aws.amazon.com/s3/">Amazon S3</a>, <a href="https://aws.amazon.com/step-functions/">AWS Step Functions</a> orchestrates the data processing workflow, <a href="https://aws.amazon.com/glue/">AWS Glue</a> transforms raw logs into optimized Apache Iceberg format, <a href="https://aws.amazon.com/athena/">Amazon Athena</a> provides SQL querying capabilities over the processed data, and Amazon QuickSuite creates interactive dashboards through natural language queries.</p>
+<div align="center">
+  <img src="Architecture.png" alt="QuickSuite visual creation">
+  <br><br>
+</div>
+<p align="center"><strong>Figure 1 – Architecture diagram</strong></p> 
+<p>The solution leverages several AWS services to automate CloudTrail log processing and utilize Amazon QuickSuite to visualize security data. AWS CloudTrail continuously logs API calls and writes encrypted logs to Amazon S3. An automated processing pipeline using AWS Step Functions orchestrates AWS Glue jobs that transform raw CloudTrail logs into optimized Apache Iceberg format. Amazon Athena provides analytical views over the processed data, which Amazon QuickSuite connects to for creating interactive security dashboards.</p>
+<p>The solution is deployed using <a href="https://aws.amazon.com/cdk/">AWS Cloud Development Kit (AWS CDK)</a> to create the resources, including Amazon S3 bucket for log storage, <a href="https://aws.amazon.com/kms/">AWS KMS</a> key for encryption, AWS Glue database and jobs for data processing, AWS Step Functions for orchestration, <a href="https://aws.amazon.com/eventbridge/">Amazon EventBridge</a> for scheduling, and Amazon QuickSuite datasets and analysis dashboards. The solution operates on automated schedules: AWS Step Functions executes CloudTrail log processing every week, and AWS Glue crawler performs data synchronization with Amazon Athena database. Both scheduling intervals can be modified to align with specific organizational requirements.</p>
+<p>The solution transforms raw CloudTrail logs into structured, queryable data through an automated processing workflow. When CloudTrail writes JSON log files to S3, the Step Functions orchestrator triggers a series of operations that convert these logs into Apache Iceberg format for optimal analytics performance.</p>
+<p>Here's how the processing works:</p>
+<p><strong>Data Discovery and Preparation</strong>: <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> functions scan the S3 bucket to identify new CloudTrail log files and organize them by date partitions. This ensures the system processes only new data and maintains efficient storage organization.</p>
+<p><strong>Parallel ETL Processing</strong>: AWS Glue jobs extract security-relevant fields from CloudTrail events, flatten nested JSON structures, and enrich the data with calculated fields like operation types and risk indicators. Multiple Glue jobs run simultaneously to process different date ranges, significantly reducing processing time.</p>
+<p><strong>Intelligent Resource Management</strong>: The system automatically scales Glue job capacity based on the volume of logs being processed. Small datasets use fewer resources to minimize costs, while large datasets get additional compute power to maintain performance.</p>
+<p><strong>Data Catalog Integration</strong>: Processed data is registered in the AWS Glue Data  as Iceberg tables, making it immediately available for querying through Amazon Athena. The system maintains proper partitioning and schema evolution to ensure consistent query performance.</p>
+<p>The Apache Iceberg format provides several performance benefits for CloudTrail analytics:</p>
+<ul>
+<li>
+<p><strong>Partition Pruning</strong>: Queries automatically filter by date partitions</p>
+</li>
+<li>
+<p><strong>Column Pruning</strong>: Only required columns are read from storage</p>
+</li>
+<li>
+<p><strong>Predicate Pushdown</strong>: Filters are applied at the storage level</p>
+</li>
+<li>
+<p><strong>Schema Evolution</strong>: Tables can evolve without breaking existing queries</p>
+</li>
+</ul>
+<p>This information is processed into Apache Iceberg format for optimal query performance. The analytical views in Amazon Athena provide pre-built abstractions for common security use cases, making it easy to create QuickSuite visualizations.</p>
+<p>The solution implements several cost optimization strategies to minimize processing and storage expenses. AWS Glue jobs automatically scale worker capacity based on data volume, using fewer resources for small datasets and scaling up only when processing large volumes of CloudTrail logs. The Apache Iceberg format's partition pruning capabilities ensure queries only scan relevant date partitions, significantly reducing Athena costs by limiting data processed per query. Additionally, the Glue jobs are optimized to handle billions of small CloudTrail files efficiently through file consolidation and batching techniques, reducing the overhead typically associated with processing numerous small files in distributed systems.</p>
+<p><strong>Creating a CloudTrail dashboard using Amazon QuickSuite</strong>:</p>
+<p>Once the data processing pipeline is deployed and CloudTrail logs are transformed into Apache Iceberg format, you can leverage Amazon QuickSsuite's AI-powered capabilities to create comprehensive security analytics dashboards. This section will guide you through:</p>
+<ul>
+<li><strong>Connecting QuickSuite to processed CloudTrail data</strong> via Amazon Athena data sources</li>
+<li><strong>Using Amazon Q in QuickSuite</strong> to generate visualizations through natural language queries</li>
+<li><strong>Creating key security metrics</strong> including failed login attempts, privilege escalations, and resource modifications</li>
+<li><strong>Building interactive dashboards</strong> with filters for time ranges, users, and AWS services</li>
+<li><strong>Setting up automated insights</strong> to detect anomalies and security patterns</li>
+<li><strong>Sharing dashboards</strong> with stakeholders and configuring access permissions</li>
+</ul>
+<p>The AI-powered approach eliminates the need for manual chart configuration, allowing security teams to focus on analysis rather than dashboard construction.</p>
+<h2 id="overall-prerequisites">Overall Prerequisites</h2>
+<p>For this walkthrough, you must have the following:</p>
+<ul>
+<li>Amazon QuickSuite user account with Admin Pro or Author Pro permissions</li>
+<li>IAM permissions for CloudTrail, Amazon S3, AWS Glue, Amazon Athena, and Amazon QuickSuite</li>
+<li>An existing VPC (referenced in the CDK configuration)</li>
+</ul>
+<h2 id="walkthrough">Walkthrough</h2>
+<p>This solution offers two deployment options to accommodate different user preferences and technical expertise levels.</p>
+<h3 id="deployment-option-1-using-aws-cdk">Deployment Option 1: Using AWS CDK</h3>
+<h4 id="cdk-deployment-prerequisites">CDK Deployment Prerequisites</h4>
+<p>For this option, you must have the following:</p>
+<ul>
+<li><a href="https://aws.amazon.com/cli/">AWS CLI</a> configured with appropriate permissions</li>
+<li>AWS Cloud Development Kit (AWS CDK) version 2.91.0 or later installed</li>
+<li>Python 3.9 or later for CDK development</li>
+<li>Node.js 18.x or later for CDK runtime</li>
+</ul>
+<p><strong>Repository:</strong> <a href="https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite">CDK Deployment Repo</a></p>
+<p>We will deploy the solution using AWS CDK Stack to create the required resources. The CDK Stack can be deployed from any AWS account with appropriate permissions. The CloudTrail logs, processing pipeline, and QuickSuite dashboards will be created in the stack deployment account and region.</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>
+<p><strong>Download the CDK code from the GitHub repository and deploy the Stack.</strong></p>
+</li>
+<li>
+<p><strong>In the CDK configuration, enter the following parameters:</strong></p>
+<ul>
+<li>
+<p>Under the section: <strong>Environment Configuration</strong></p>
+<ul>
+<li><strong>Account ID</strong>: Your AWS account ID for resource deployment</li>
+<li><strong>Region</strong>: AWS region for resource deployment (e.g., us-east-1)</li>
+<li><strong>Environment</strong>: Environment name (e.g., sandbox, dev, prod)</li>
+</ul>
+</li>
+<li>
+<p>Under the section: <strong>CloudTrail Configuration</strong></p>
+<ul>
+<li><strong>Log Expiration Days</strong>: Number of days to retain CloudTrail logs (default: 14)</li>
+<li><strong>Multi-Region Trail</strong>: Enable multi-region CloudTrail logging</li>
+<li><strong>Include Global Services</strong>: Include AWS global service events</li>
+</ul>
+</li>
+<li>
+<p>Under the section: <strong>Processing Configuration</strong></p>
+<ul>
+<li><strong>Glue Worker Count</strong>: Number of Glue workers for processing (auto-scaled based on data volume)</li>
+<li><strong>Processing Schedule</strong>: EventBridge schedule for automated processing (default: weekly)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Navigate to the AWS CloudFormation console to view the resources created by the CDK Stack.</strong></p>
+</li>
+</ol>
+<h3 id="deployment-option-2-using-cloudformation-template">Deployment Option 2: Using CloudFormation Template</h3>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>
+<p>Download the <a href="https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml">CloudFormation template</a> from the GitHub repository.</p>
+</li>
+<li>
+<p><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html">Create an S3 bucket</a> to store Lambda code and Glue scripts:</p>
+<p>Using AWS Console:</p>
+<ul>
+<li>Go to S3 → Create bucket</li>
+<li>Provide a unique bucket name</li>
+<li>Keep default settings</li>
+</ul>
+<p>Or using AWS CLI:</p>
+<pre class="hljs"><code><div>aws s3 mb s3://YOUR-BUCKET-NAME
+</div></code></pre>
+</li>
+<li>
+<p>Download the <a href="https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/releases/download/v1.0/cloudtrail-assets.zip">cloudtrail-assets.zip</a> file containing Lambda code and Glue scripts.</p>
+</li>
+<li>
+<p>Extract the zip file and upload the contents to your S3 bucket:</p>
+<p>Using AWS Console:</p>
+<ul>
+<li>Extract <code>cloudtrail-assets.zip</code> to a local folder</li>
+<li>Upload the extracted <code>lambda/</code> folder to <code>s3://YOUR-BUCKET/lambda/</code></li>
+<li>Upload the extracted <code>glue/</code> folder to <code>s3://YOUR-BUCKET/glue/</code></li>
+</ul>
+<p>Or using AWS CLI:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Extract the zip file</span>
+unzip cloudtrail-assets.zip
+
+<span class="hljs-comment"># Upload to S3</span>
+aws s3 cp lambda/ s3://YOUR-BUCKET-NAME/lambda/ --recursive
+aws s3 cp glue/ s3://YOUR-BUCKET-NAME/glue/ --recursive
+</div></code></pre>
+</li>
+<li>
+<p><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack">Deploy the stack</a> using the downloaded <a href="https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite/tree/main/cfn_template/CFNCloudTrailAnalytics.yaml">CloudFormation template</a> and enter the following parameters:</p>
+<ul>
+<li>
+<p>Under the section: <strong>Resource Configuration</strong></p>
+<ul>
+<li><strong>AssetsBucket</strong>: Name of the S3 bucket containing Lambda code and Glue scripts (created in step 2)</li>
+<li><strong>ResourcePrefix</strong>: Prefix for resource names to allow multiple deployments (e.g., cloudtrail, team1)</li>
+<li><strong>Environment</strong>: Environment name (e.g., dev, prod, sandbox)</li>
+</ul>
+</li>
+<li>
+<p>Under the section: <strong>CloudTrail Configuration</strong></p>
+<ul>
+<li><strong>LogExpirationDays</strong>: Number of days to retain CloudTrail logs in S3 (default: 14)</li>
+</ul>
+</li>
+<li>
+<p>Under the section: <strong>Processing Configuration</strong></p>
+<ul>
+<li><strong>NumberOfWorkers</strong>: Number of AWS Glue workers for processing CloudTrail logs (default: 5)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Check &quot;I acknowledge that AWS CloudFormation might create IAM resources with custom names&quot; and create the stack.</p>
+</li>
+<li>
+<p>Navigate to the Resources tab to view the resources created by the CloudFormation Stack.</p>
+</li>
+</ol>
+<div align="center">
+  <img src="template-deploy.png" alt="AWS CloudFormation parameters – CloudFormation deployment">
+  <br><br>
+</div>
+<p align="center"><strong>Figure 2 – AWS CloudFormation parameters – CloudFormation deployment</strong></p> 
+<h3 id="post-deployment-steps">Post-Deployment Steps</h3>
+<p><strong>Navigate to the AWS CloudFormation console to view the resources created by the stack.</strong></p>
+<p>After the deployment completes, wait for CloudTrail to generate logs and the initial AWS Glue job execution to complete. By default, the EventBridge rule triggers processing weekly. For immediate processing and testing, you can manually execute the Step Functions state machine.</p>
+<p>Follow these steps to run the initial processing:</p>
+<ol>
+<li>
+<p>Navigate to AWS Step Functions console</p>
+</li>
+<li>
+<p>Choose the state machine that starts with &quot;CloudTrailLogsStepFunction-*&quot;</p>
+</li>
+<li>
+<p>Choose Start execution to run the processing pipeline.</p>
+</li>
+</ol>
+<p>The Step Functions workflow will:</p>
+<ul>
+<li>
+<p>Check for CloudTrail log availability</p>
+</li>
+<li>
+<p>Discover all daily log partitions using Lambda functions</p>
+</li>
+<li>
+<p>Process logs in parallel using dynamically scaled Glue jobs</p>
+</li>
+<li>
+<p>Update the Glue Data Catalog for Athena querying</p>
+</li>
+</ul>
+<h2 id="validate-quicksuite-user-and-permissions">Validate QuickSuite user and permissions</h2>
+<p><strong>QuickSuite User Role:</strong></p>
+<ol>
+<li>
+<p>Navigate to Amazon QuickSuite console and sign in</p>
+</li>
+<li>
+<p>Choose the user icon on top right and <strong>Manage QuickSuite</strong></p>
+</li>
+<li>
+<p>Choose <strong>Manage users</strong> and choose the role <strong>Admin Pro</strong> for the QuickSuite user. you can find more information at <a href="https://docs.aws.amazon.com/quicksuite/latest/userguide/permissions.html">Amazon QuickSuite permissions</a>.
+<strong>QuickSuite permissions:</strong></p>
+</li>
+<li>
+<p>On the same page in the left menu, under <strong>Permissions</strong>, choose <strong>AWS resources</strong>.</p>
+</li>
+<li>
+<p>Choose <strong>Amazon Athena</strong> and <strong>Amazon S3</strong>. Under <strong>Select S3 buckets</strong>, select the S3 bucket created by the CDK template for CloudTrail logs.</p>
+</li>
+<li>
+<p>Choose <strong>Save</strong>.</p>
+</li>
+</ol>
+<h2 id="create-analytical-views-in-athena">Create analytical views in Athena</h2>
+<p>Before creating QuickSuite visualizations, set up the analytical views in Amazon Athena. The views provided below are just samples and can be changed with respect to your organization:</p>
+<ol>
+<li>
+<p><strong>Navigate to Amazon Athena console</strong></p>
+</li>
+<li>
+<p><strong>Select the <code>cloudtrail_logs</code> database</strong></p>
+</li>
+<li>
+<p><strong>Create the analytical views using the SQLs provided in <code>infra_sandbox\cloudtrail_asset\view_queries</code>:</strong></p>
+</li>
+</ol>
+<h2 id="create-visuals-using-amazon-quicksuite">Create Visuals using Amazon QuickSuite</h2>
+<ol>
+<li>
+<p>On the QuickSuite home page, choose <strong>Datasets</strong> and create a <strong>new Dataset</strong>, then click on <strong>create datasource</strong> and name it <code>cloudtrail source</code>. Choose Athena and use the <strong>primary</strong> (or any other workgroup with respect to your organization), hit next, and in the next page choose the <code>cloudtrail_logs</code> database, then hit next and you would be able to choose all the views you have defined in the previous step. Repeat the last step to include all the views you have defined as a dataset.</p>
+</li>
+<li>
+<p>Next, On the QuickSuite home page, choose <strong>Analysis</strong> and create a new analysis.</p>
+</li>
+<li>
+<p>Under <strong>Visuals</strong>, choose the <strong>Build</strong> icon. This opens a side panel to enter natural language queries.</p>
+</li>
+<li>
+<p>Following are example prompts to generate security visualizations. You can customize the prompts and visuals as required.</p>
+</li>
+</ol>
+<h3 id="security-events-by-type">Security Events by Type</h3>
+<p>This visual displays the distribution of different security event types, providing insights into the most common security activities in your environment.</p>
+<ul>
+<li>On the left side, enter the prompt as <strong>&quot;Create a visual for security events by type&quot;</strong>. Amazon Q creates a custom chart for you in the prompt and provides a summary of the analysis of the charts. If you are satisfied with the result, you can manually add it to the dashboard.</li>
+</ul>
+<div align="center">
+  <img src="image1.png" alt="QuickSuite visual creation">
+  <br><br>
+  <img src="image.png" alt="Create visuals using Amazon QuickSuite">
+</div>
+<p align="center"><strong>Figure 3 – Example of a security events visualization automatically generated by Amazon Q in QuickSuite</strong></p> 
+- Amazon QuickSuite will generate the visual. Choose **Add to Analysis** and resize the visual as required. 
+<ul>
+<li>Double-click on the heading to edit and update to <strong>&quot;Security Events by Type&quot;</strong></li>
+</ul>
+<h3 id="failed-api-calls-by-service">Failed API Calls by Service</h3>
+<ul>
+<li>Enter the prompt as <strong>&quot;Create a bar chart for count of failed events by eventsource from cloudtrail_flattened where is_failed equals 1&quot;</strong> and choose <strong>BUILD</strong>.</li>
+</ul>
+<div align="center">
+  <img src="Failed_API_Calls_by_Service.png" alt="QuickSuite visual creation">
+  <br><br>
+</div>
+<p align="center"><strong>Figure 4 – Build Failed API visual using Amazon QuickSuite Q chat</strong></p> 
+<h2 id="working-with-q-in-dashboard">Working with Q in dashboard</h2>
+<p>After you have done your analysis, you can publish your dashboard and then use Q to analyze your dashboard. For example, you can ask &quot;give me a quick summary of the dashboard to know if there are any security issues&quot; and Amazon Q will provide a summary of your dashboard after analyzing it.</p>
+<div align="center">
+  <img src="image-1.png" alt="QuickSuite visual creation">
+  <br><br>
+</div>
+<p align="center"><strong>Figure 5 – Using Amazon Q in the dashboard</strong></p> 
+<h3 id="monitoring-recommendations">Monitoring Recommendations</h3>
+<p>Monitor the following metrics:</p>
+<ul>
+<li>
+<p>Step Functions execution success rate and duration</p>
+</li>
+<li>
+<p>Glue job execution time and DPU utilization</p>
+</li>
+<li>
+<p>Athena query performance and data scanned</p>
+</li>
+<li>
+<p>S3 storage usage and access patterns</p>
+</li>
+<li>
+<p>QuickSuite dashboard usage and refresh frequency</p>
+</li>
+</ul>
+<h2 id="cleanup">Cleanup</h2>
+<p>To delete the resources:</p>
+<ol>
+<li>
+<p><strong>Navigate to the AWS CloudFormation console</strong></p>
+</li>
+<li>
+<p><strong>Choose Stacks and choose stack named CloudTrailWithKmsStack</strong></p>
+</li>
+<li>
+<p><strong>Choose Delete and Delete stack</strong></p>
+</li>
+<li>
+<p><strong>Navigate to Amazon QuickSuite console</strong></p>
+</li>
+<li>
+<p><strong>Delete the Dashboard, Analyses and the Dataset</strong></p>
+</li>
+<li>
+<p><strong>Remove Athena views:</strong></p>
+</li>
+</ol>
+<pre class="hljs"><code><div>
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">VIEW</span> cloudtrail_user_summary; 
+
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">VIEW</span> cloudtrail_security_events; 
+
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">VIEW</span> cloudtrail_daily_metrics; 
+
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">VIEW</span> cloudtrail_resource_changes; 
+
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">VIEW</span> cloudtrail_flattened; 
+
+</div></code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post, we demonstrated how Amazon QuickSuite simplifies the creation of CloudTrail security analytics dashboards. By leveraging natural language interactions and automated data processing pipelines, what was once a complex, multi-step process has been transformed into simple, intuitive prompts that generate comprehensive security visualizations. This solution saves valuable time and provides real-time insights into security events, compliance status, and threat detection across your AWS environment.</p>
+<p>Furthermore, Amazon QuickSuite enables interactive querying of your CloudTrail data through natural language prompts, allowing you to quickly investigate security incidents and compliance questions. The combination of AWS services, including CloudTrail, Step Functions, Glue, Athena, and QuickSuite, enables organizations to maintain better security visibility while simplifying the monitoring and reporting process. Whether you're managing security compliance, investigating incidents, or monitoring AWS resource changes, this solution offers a streamlined approach to security analytics and threat detection. Transform your security monitoring today by implementing AI-powered CloudTrail analytics and gain unprecedented visibility into your AWS environment.</p>
+<p>To learn more about AWS CloudTrail security best practices, visit our <a href="https://docs.aws.amazon.com/cloudtrail/">AWS CloudTrail User Guide</a>.</p>
+<h2 id="about-the-authors">About the Authors</h2>
+<p><strong>[Majid Kamyab]</strong></p>
+<p>[Author bio and headshot - Majid Kamyab is an AWS-certified Cloud Architect specializing in data pipelines, analytics, and security automation.]</p>
+<p><strong>[Vy Nguyen]</strong></p>
+<p>[Author bio and headshot - is an AWS-certified Data Analytics Architect focusing on visualization, governance, and AI-powered insights using AWS services]</p>
+<p><strong>GitHub Repository</strong>: The complete code for this solution is available in the <a href="https://github.com/Kamyab-Majid/cloudtrail-events-quicksuite">cloudtrail-events-quicksuite</a>.</p>
+
+</body>
+</html>
